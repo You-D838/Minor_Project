@@ -1,0 +1,317 @@
+.voterlog-container {
+  animation: fadeUp 0.4s ease;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── STATS ──────────────────────────────────────── */
+.vl-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.vl-stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text-muted);
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vl-stat-box.green  { border-left-color: #22c55e; }
+.vl-stat-box.orange { border-left-color: #f59e0b; }
+
+.vl-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.vl-stat-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── TOOLBAR ────────────────────────────────────── */
+.vl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.vl-search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.vl-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.vl-search {
+  width: 100%;
+  padding: 10px 36px 10px 36px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.vl-search:focus {
+  outline: none;
+  border-color: var(--text-muted);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+body.dark .vl-search:focus {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+}
+
+.vl-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.vl-clear:hover { color: var(--text); }
+
+.vl-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.vl-filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.vl-filter-btn:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.vl-filter-btn.active {
+  background: var(--text);
+  color: var(--surface);
+  border-color: var(--text);
+  font-weight: 600;
+}
+
+/* ─── TABLE CARD ─────────────────────────────────── */
+.vl-table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.vl-table-meta {
+  padding: 12px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.vl-table-wrapper {
+  overflow-x: auto;
+}
+
+.vl-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vl-table thead {
+  border-bottom: 1px solid var(--border);
+}
+
+.vl-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+.vl-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.vl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.vl-table tbody tr:hover {
+  background: var(--surface2);
+}
+
+.vl-index {
+  color: var(--text-muted);
+  font-size: 13px;
+  width: 40px;
+}
+
+/* Name with avatar */
+.vl-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.vl-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.vl-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vl-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.vl-date {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Status Badge */
+.vl-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.vl-badge.voted {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.vl-badge.not-voted {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+body.dark .vl-badge.voted    { background: #052e16; color: #4ade80; }
+body.dark .vl-badge.not-voted { background: #1c1400; color: #fbbf24; }
+
+/* ─── EMPTY STATE ────────────────────────────────── */
+.vl-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.vl-empty span {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.vl-empty h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.vl-empty p {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 360px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 700px) {
+  .vl-stats   { grid-template-columns: 1fr 1fr 1fr; }
+  .vl-toolbar { flex-direction: column; align-items: stretch; }
+  .vl-filters { justify-content: stretch; }
+  .vl-filter-btn { flex: 1; text-align: center; }
+}

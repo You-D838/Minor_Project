@@ -1,0 +1,229 @@
+.registration-container {
+  display: flex;
+  justify-content: center;
+  animation: fadeUp 0.4s ease;
+}
+
+.registration-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 36px 40px;
+  max-width: 780px;
+  width: 100%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+body.dark .registration-card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.reg-header {
+  margin-bottom: 28px;
+}
+
+.reg-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.reg-header p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.registration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+  letter-spacing: 0.1px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"] {
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background: var(--surface2);
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--text-muted);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+}
+
+body.dark .form-group input:focus {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.05);
+}
+
+/* Photo Upload */
+.photo-upload { grid-column: 1 / -1; }
+.upload-area input[type="file"] { display: none; }
+
+.upload-label {
+  display: block;
+  cursor: pointer;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 28px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.upload-label:hover {
+  border-color: var(--text-muted);
+  background: var(--surface2);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.upload-icon { font-size: 40px; }
+
+.upload-placeholder p {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview-image {
+  max-width: 180px;
+  max-height: 180px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.remove-photo {
+  background: #fee2e2;
+  color: var(--accent);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.remove-photo:hover { background: #fca5a5; }
+
+/* Submit */
+.submit-btn {
+  padding: 13px;
+  background: var(--text);
+  color: var(--surface);
+  border: none;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+}
+
+.submit-btn:hover:not(:disabled) { opacity: 0.82; }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+body.dark .spinner-sm {
+  border-color: rgba(0,0,0,0.3);
+  border-top-color: #0a0a0a;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Message */
+.message {
+  margin-top: 18px;
+  padding: 13px 16px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.message.success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: var(--accent);
+  border: 1px solid #fca5a5;
+}
+
+body.dark .message.success { background: #052e16; color: #4ade80; border-color: #166534; }
+body.dark .message.error   { background: #1a0505; color: #f87171; border-color: #7f1d1d; }
+
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .registration-card { padding: 24px 18px; }
+}

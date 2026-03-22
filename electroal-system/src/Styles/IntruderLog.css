@@ -1,0 +1,230 @@
+.intruder-container {
+  animation: fadeUp 0.4s ease;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ─── STATS ──────────────────────────────────────── */
+.intruder-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.stat-box:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+body.dark .stat-box:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+.stat-box .stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.big-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── EMPTY STATE ────────────────────────────────── */
+.empty-intruders {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 60px 30px;
+  text-align: center;
+}
+
+.empty-intruders span {
+  font-size: 52px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.empty-intruders h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.empty-intruders p {
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 360px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ─── INTRUDER GRID ──────────────────────────────── */
+.intruder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.intruder-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.intruder-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+body.dark .intruder-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.intruder-image {
+  position: relative;
+  height: 200px;
+  background: var(--surface2);
+  overflow: hidden;
+}
+
+.intruder-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.alert-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--accent);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.intruder-details { padding: 16px 18px; }
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child { border-bottom: none; }
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.value {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.value.red {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.intruder-actions {
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+}
+
+.intruder-actions button {
+  padding: 9px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.2s;
+}
+
+.btn-view {
+  background: var(--text);
+  color: var(--surface);
+  border: none;
+}
+
+.btn-view:hover { opacity: 0.8; }
+
+.btn-download {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-download:hover { background: var(--border); }
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 600px) {
+  .intruder-stats { grid-template-columns: repeat(3, 1fr); }
+  .intruder-grid  { grid-template-columns: 1fr; }
+}
+
+/* ─── NO IMAGE FALLBACK ──────────────────────────── */
+.no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  background: var(--surface2);
+}

@@ -1,0 +1,218 @@
+.dashboard-container {
+  animation: fadeUp 0.4s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ─── STAT CARDS — always 4 columns ─────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  border-left: 3px solid var(--text-muted);
+  transition: box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+body.dark .stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+.stat-card.green  { border-left-color: #22c55e; }
+.stat-card.orange { border-left-color: #f59e0b; }
+.stat-card.red    { border-left-color: var(--accent); }
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-icon-sm {
+  font-size: 20px;
+  position: absolute;
+  top: 20px;
+  right: 18px;
+  opacity: 0.5;
+}
+
+/* ─── TURNOUT ────────────────────────────────────── */
+.turnout-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+
+.turnout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.turnout-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.turnout-percent {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-bar-bg {
+  background: var(--surface2);
+  border-radius: 50px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--text);
+  border-radius: 50px;
+  transition: width 1s ease;
+  min-width:0;
+}
+
+.turnout-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ─── ACTIVITY TABLE ─────────────────────────────── */
+.recent-activity {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 22px 24px;
+}
+
+.recent-activity h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+
+.activity-table { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead {
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+
+tbody tr:hover { background: var(--surface2); }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.badge.authorized { background: #dcfce7; color: #15803d; }
+.badge.duplicate  { background: #fef9c3; color: #a16207; }
+.badge.intruder   { background: #fee2e2; color: var(--accent); }
+
+body.dark .badge.authorized { background: #052e16; color: #4ade80; }
+body.dark .badge.duplicate  { background: #1c1400; color: #fbbf24; }
+body.dark .badge.intruder   { background: #1a0505; color: #f87171; }
+
+/* ─── EMPTY STATE ────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state span { font-size: 40px; display: block; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 860px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-number { font-size: 28px; }
+  .page-title { font-size: 20px; }
+}
