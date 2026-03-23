@@ -1,0 +1,28 @@
+cd "C:\Users\utsav\OneDrive\Desktop\Minor Project"
+```
+
+Create a file named `.gitignore` with this content:
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+backend/electoral.db
+
+# ML files (large — friend has these locally)
+backend/weights/
+backend/embeddings.pkl
+
+# Uploaded files
+backend/voter_photos/
+backend/static/intruder_captures/
+backend/cropped_faces/
+
+# Node
+electroal-system/node_modules/
+electroal-system/build/
+
+# Environment
+.env

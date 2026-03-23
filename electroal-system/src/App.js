@@ -11,9 +11,13 @@ import './App.css';
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Intruder log shared state — LiveVoting writes, IntruderLog reads
+  // Persist login across refresh using localStorage token
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem('token')
+  );
+
+  // Session intruder captures (for current session before backend saves)
   const [capturedIntruders, setCapturedIntruders] = useState([]);
 
   const addIntruder = (intruder) => {
@@ -23,6 +27,11 @@ function App() {
   const toggleDark = () => {
     setDarkMode(!darkMode);
     document.body.classList.toggle('dark');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
   };
 
   return (
@@ -57,9 +66,7 @@ function App() {
                 <button onClick={toggleDark} className="dark-toggle" title="Toggle dark mode">
                   {darkMode ? '☀️' : '🌙'}
                 </button>
-                <button onClick={() => setIsLoggedIn(false)} className="logout-btn">
-                  Logout
-                </button>
+                <button onClick={handleLogout} className="logout-btn">Logout</button>
               </div>
 
               <button
@@ -80,7 +87,7 @@ function App() {
             <Route path="/dashboard"    element={isLoggedIn ? <Dashboard intruderCount={capturedIntruders.length} /> : <Navigate to="/login" />} />
             <Route path="/registration" element={isLoggedIn ? <Registration /> : <Navigate to="/login" />} />
             <Route path="/voting"       element={isLoggedIn ? <LiveVoting onIntruderCaptured={addIntruder} /> : <Navigate to="/login" />} />
-            <Route path="/voters"       element={isLoggedIn ? <VoterLog />     : <Navigate to="/login" />} />
+            <Route path="/voters"       element={isLoggedIn ? <VoterLog /> : <Navigate to="/login" />} />
             <Route path="/intruders"    element={isLoggedIn ? <IntruderLog intruders={capturedIntruders} /> : <Navigate to="/login" />} />
           </Routes>
         </div>

@@ -1,0 +1,26 @@
+# Flask
+flask
+flask-cors
+pyjwt
+
+# PyTorch (CPU version — change to GPU version if needed)
+torch
+torchvision
+
+# Computer Vision
+opencv-python
+Pillow
+
+# Face Recognition
+facenet-pytorch
+
+# YOLOv5 dependencies
+numpy
+pandas
+matplotlib
+seaborn
+scipy
+tqdm
+requests
+psutil
+PyYAML

@@ -1,21 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Styles/IntruderLog.css';
 
-function IntruderLog({ intruders = [] }) {
+const API_BASE = 'http://localhost:5000/api';
+
+function IntruderLog({ intruders: sessionIntruders = [] }) {
+  const [intruders, setIntruders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch from backend on load — persistent records from DB
+  useEffect(() => {
+    fetch(`${API_BASE}/intruders`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setIntruders(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Backend not connected — fall back to session captures from props
+        setIntruders(sessionIntruders);
+        setLoading(false);
+      });
+  }, [sessionIntruders]);
+
+  // Merge any new session captures not yet in DB list
+  const allIntruders = [
+    ...intruders,
+    ...sessionIntruders.filter(s => !intruders.find(i => i.id === s.id))
+  ];
+
   const stats = {
-    total: intruders.length,
-    today: intruders.filter(i => {
+    total: allIntruders.length,
+    today: allIntruders.filter(i => {
       const today = new Date().toLocaleDateString();
-      return i.timestamp.includes(today.split('/')[1]) || true; // show all as today for now
+      return new Date(i.timestamp).toLocaleDateString() === today;
     }).length,
-    thisWeek: intruders.length,
+    thisWeek: allIntruders.length,
+  };
+
+  const getImageSrc = (intruder) => {
+    // If image_path from backend — use backend static URL
+    if (intruder.image_path) {
+      return `http://localhost:5000/static/${intruder.image_path}`;
+    }
+    // If base64 from session capture — use directly
+    if (intruder.image && intruder.image.startsWith('data:')) {
+      return intruder.image;
+    }
+    return null;
   };
 
   const handleDownload = (intruder) => {
+    const src = getImageSrc(intruder);
+    if (!src) return;
     const link = document.createElement('a');
-    link.href = intruder.image;
+    link.href = src;
     link.download = `intruder-${intruder.id}.jpg`;
     link.click();
+  };
+
+  const handleView = (intruder) => {
+    const src = getImageSrc(intruder);
+    if (src) window.open(src, '_blank');
   };
 
   return (
@@ -32,27 +79,33 @@ function IntruderLog({ intruders = [] }) {
         </div>
         <div className="stat-box">
           <span className="stat-label">Today</span>
-          <span className="big-number">{intruders.length}</span>
+          <span className="big-number">{stats.today}</span>
         </div>
         <div className="stat-box">
           <span className="stat-label">This Week</span>
-          <span className="big-number">{intruders.length}</span>
+          <span className="big-number">{stats.thisWeek}</span>
         </div>
       </div>
 
-      {intruders.length === 0 ? (
+      {loading ? (
+        <div className="empty-intruders">
+          <span>⏳</span>
+          <h2>Loading...</h2>
+          <p>Fetching intruder records from server.</p>
+        </div>
+      ) : allIntruders.length === 0 ? (
         <div className="empty-intruders">
           <span>🛡️</span>
           <h2>No Intruders Detected</h2>
-          <p>The system is actively monitoring. Unauthorized access attempts will be captured and appear here automatically.</p>
+          <p>The system is actively monitoring. Unauthorized access attempts will appear here automatically.</p>
         </div>
       ) : (
         <div className="intruder-grid">
-          {intruders.map(intruder => (
+          {allIntruders.map(intruder => (
             <div key={intruder.id} className="intruder-card">
               <div className="intruder-image">
-                {intruder.image ? (
-                  <img src={intruder.image} alt="Captured intruder" />
+                {getImageSrc(intruder) ? (
+                  <img src={getImageSrc(intruder)} alt="Captured intruder" />
                 ) : (
                   <div className="no-image">📷 No Image</div>
                 )}
@@ -70,25 +123,25 @@ function IntruderLog({ intruders = [] }) {
                 </div>
                 <div className="detail-row">
                   <span className="label">Location</span>
-                  <span className="value">{intruder.location}</span>
+                  <span className="value">{intruder.location || 'Polling Station A'}</span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Confidence</span>
-                  <span className="value red">{(intruder.confidence * 100).toFixed(1)}%</span>
+                  <span className="value red">
+                    {typeof intruder.confidence === 'number'
+                      ? intruder.confidence <= 1
+                        ? (intruder.confidence * 100).toFixed(1)
+                        : intruder.confidence.toFixed(1)
+                      : 0}%
+                  </span>
                 </div>
               </div>
 
               <div className="intruder-actions">
-                <button
-                  className="btn-view"
-                  onClick={() => window.open(intruder.image, '_blank')}
-                >
+                <button className="btn-view" onClick={() => handleView(intruder)}>
                   View Full
                 </button>
-                <button
-                  className="btn-download"
-                  onClick={() => handleDownload(intruder)}
-                >
+                <button className="btn-download" onClick={() => handleDownload(intruder)}>
                   Download
                 </button>
               </div>

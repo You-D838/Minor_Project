@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import '../Styles/Login.css';
 
+const API_BASE = 'http://localhost:5000/api';
+
 function Login({ onLogin }) {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
@@ -11,18 +13,36 @@ function Login({ onLogin }) {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Placeholder — replace with real API call when backend is ready
-    setTimeout(() => {
-      if (credentials.username === 'admin' && credentials.password === 'admin123') {
+
+    try {
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem('token', data.token);
         onLogin();
       } else {
-        setError('Invalid username or password.');
+        setError(data.message || 'Invalid username or password.');
       }
+    } catch (err) {
+      // Backend not connected — fallback to demo credentials
+      if (credentials.username === 'admin' && credentials.password === 'admin123') {
+        localStorage.setItem('token', 'demo-token');
+        onLogin();
+      } else {
+        setError('Could not connect to server. Demo: admin / admin123');
+      }
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

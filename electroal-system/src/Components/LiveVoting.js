@@ -2,102 +2,121 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import '../Styles/LiveVoting.css';
 
+const API_BASE = 'http://localhost:5000/api';
+
 function LiveVoting({ onIntruderCaptured }) {
   const [verificationResult, setVerificationResult] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [cameraError, setCameraError] = useState(false);
-  const [lastCapture, setLastCapture] = useState(null);
   const [autoScanActive, setAutoScanActive] = useState(true);
+  const [stats, setStats] = useState({ todayVotes: 0, pending: 0, intruders: 0 });
   const webcamRef = useRef(null);
-  const scanIntervalRef = useRef(null);
+  const scanTimeoutRef = useRef(null);
 
-  const stats = { todayVotes: 0, pending: 0, intruders: 0 };
+  // Fetch live stats
+  useEffect(() => {
+    const fetchStats = () => {
+      fetch(`${API_BASE}/stats`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      })
+        .then(res => res.json())
+        .then(data => setStats({
+          todayVotes: data.voted || 0,
+          pending: data.not_voted || 0,
+          intruders: data.intruders || 0
+        }))
+        .catch(() => {}); // silently fail if backend not connected
+    };
 
-  const runScan = useCallback(() => {
-    if (isScanning) return;
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const runScan = useCallback(async () => {
+    if (isScanning || !webcamRef.current || cameraError) return;
+
     setIsScanning(true);
     setVerificationResult(null);
-    setLastCapture(null);
 
-    const screenshot = webcamRef.current ? webcamRef.current.getScreenshot() : null;
+    // Capture screenshot
+    const screenshot = webcamRef.current.getScreenshot();
+    if (!screenshot) {
+      setIsScanning(false);
+      return;
+    }
 
-    // Simulate backend face recognition response
-    // confidence < 0.90 = intruder, >= 0.90 = authorized or duplicate
-    setTimeout(() => {
-      const confidence = parseFloat((Math.random()).toFixed(2));
+    try {
+      const response = await fetch(`${API_BASE}/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ image: screenshot })
+      });
 
-      let result;
-
-      if (confidence >= 0.90) {
-        // High confidence — recognized voter
-        const authorizedScenarios = [
-          { status: 'authorized', name: 'Ram Sharma',  message: 'Identity Verified — Proceed to Vote' },
-          { status: 'duplicate',  name: 'Sita Kumari', message: 'Already Voted — Duplicate Detected' },
-        ];
-        result = {
-          ...authorizedScenarios[Math.floor(Math.random() * authorizedScenarios.length)],
-          confidence,
-        };
-      } else {
-        // Low confidence — intruder
-        result = {
-          status: 'intruder',
-          name: 'Unknown Person',
-          message: `Access Denied — Confidence too low (${(confidence * 100).toFixed(1)}%)`,
-          confidence,
-        };
-      }
+      const result = await response.json();
+      // result = { status, name, confidence, message }
 
       setVerificationResult(result);
-      setIsScanning(false);
 
-      // If intruder, capture and log
-      if (result.status === 'intruder' && screenshot) {
+      // If intruder — pass to App.js for intruder log
+      if (result.status === 'intruder') {
         const intruderRecord = {
           id: Date.now(),
           image: screenshot,
+          image_path: result.image_path || null,
           timestamp: new Date().toLocaleString(),
           location: 'Polling Station A',
-          confidence: result.confidence,
+          confidence: result.confidence / 100, // convert % back to 0-1 for display
         };
-        setLastCapture(intruderRecord);
-        onIntruderCaptured(intruderRecord);
+        if (onIntruderCaptured) onIntruderCaptured(intruderRecord);
+      }
+
+    } catch (err) {
+      // Backend not connected — show error state
+      setVerificationResult({
+        status: 'error',
+        name: '',
+        message: 'Could not connect to server. Check backend.',
+        confidence: 0
+      });
+    } finally {
+      setIsScanning(false);
+
+      // Schedule next scan only AFTER this one finishes (fixes overlap issue)
+      if (autoScanActive) {
+        scanTimeoutRef.current = setTimeout(runScan, 5000);
       }
 
       // Clear result after 5 seconds
       setTimeout(() => setVerificationResult(null), 5000);
-    }, 2000);
-  }, [isScanning, onIntruderCaptured]);
+    }
+  }, [isScanning, cameraError, autoScanActive, onIntruderCaptured]);
 
-  // Auto-scan every 8 seconds when active
+  // Start auto scanning
   useEffect(() => {
     if (autoScanActive && !cameraError) {
-      // Initial scan after 2 seconds of camera loading
-      const initialDelay = setTimeout(() => {
-        runScan();
-      }, 2000);
-
-      scanIntervalRef.current = setInterval(() => {
-        runScan();
-      }, 8000);
-
-      return () => {
-        clearTimeout(initialDelay);
-        clearInterval(scanIntervalRef.current);
-      };
+      scanTimeoutRef.current = setTimeout(runScan, 2000);
     }
-  }, [autoScanActive, cameraError, runScan]);
+    return () => {
+      if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
+    };
+  }, [autoScanActive, cameraError]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
+      if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
     };
   }, []);
 
   const getStatusClass = () => {
     if (!verificationResult) return '';
-    return verificationResult.status === 'authorized' ? 'status-success' : 'status-error';
+    if (verificationResult.status === 'authorized') return 'status-success';
+    if (verificationResult.status === 'error') return 'status-warning';
+    return 'status-error';
   };
 
   return (
@@ -142,7 +161,6 @@ function LiveVoting({ onIntruderCaptured }) {
               </div>
             )}
 
-            {/* Scan countdown indicator */}
             {!isScanning && !cameraError && autoScanActive && (
               <div className="scan-pulse">
                 <div className="corner tl"></div>
@@ -153,10 +171,12 @@ function LiveVoting({ onIntruderCaptured }) {
             )}
           </div>
 
-          {/* Pause / Resume toggle */}
           <button
             className={`toggle-scan-btn ${autoScanActive ? 'pause' : 'resume'}`}
-            onClick={() => setAutoScanActive(!autoScanActive)}
+            onClick={() => {
+              if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
+              setAutoScanActive(!autoScanActive);
+            }}
             disabled={cameraError}
           >
             {autoScanActive ? '⏸ Pause Scanning' : '▶ Resume Scanning'}
@@ -173,26 +193,26 @@ function LiveVoting({ onIntruderCaptured }) {
                   {verificationResult.status === 'authorized' && '✅'}
                   {verificationResult.status === 'duplicate'  && '⚠️'}
                   {verificationResult.status === 'intruder'   && '🚫'}
+                  {verificationResult.status === 'no_face'    && '👁️'}
+                  {verificationResult.status === 'error'      && '⚠️'}
                 </div>
-                <h2>{verificationResult.status.toUpperCase()}</h2>
-                <p className="voter-name">{verificationResult.name}</p>
+                <h2>{verificationResult.status.replace('_', ' ').toUpperCase()}</h2>
+                {verificationResult.name && (
+                  <p className="voter-name">{verificationResult.name}</p>
+                )}
                 <p className="status-message">{verificationResult.message}</p>
-                <p className="confidence-display">
-                  Confidence: <strong>{(verificationResult.confidence * 100).toFixed(1)}%</strong>
-                  {verificationResult.confidence < 0.90
-                    ? ' — Below threshold'
-                    : ' — Above threshold'}
-                </p>
-
-                {verificationResult.status === 'intruder' && lastCapture && (
-                  <div className="captured-preview">
-                    <p className="captured-label">📸 Image Captured & Logged</p>
-                    <img src={lastCapture.image} alt="Captured intruder" className="captured-img" />
-                  </div>
+                {verificationResult.confidence > 0 && (
+                  <p className="confidence-display">
+                    Confidence: <strong>{verificationResult.confidence.toFixed(1)}%</strong>
+                    {verificationResult.confidence < 90
+                      ? ' — Below threshold'
+                      : ' — Above threshold'}
+                  </p>
                 )}
               </>
             ) : (
               <>
+                <div className="status-icon">👁️</div>
                 <h2>{isScanning ? 'SCANNING' : 'MONITORING'}</h2>
                 <p className="status-message">
                   {isScanning
@@ -207,14 +227,14 @@ function LiveVoting({ onIntruderCaptured }) {
           <div className="threshold-info">
             <span className="threshold-label">Detection Threshold</span>
             <div className="threshold-bar-bg">
-              <div className="threshold-bar-fill"></div>
               <div className="threshold-marker">
                 <span>90%</span>
               </div>
+              <div className="threshold-marker::after"></div>
             </div>
             <div className="threshold-legend">
-              <span className="legend-intruder">Below 90% = Intruder</span>
-              <span className="legend-authorized">Above 90% = Authorized</span>
+              <span className="legend-intruder">▌ Below 90% = Intruder</span>
+              <span className="legend-authorized">▌ Above 90% = Authorized</span>
             </div>
           </div>
 

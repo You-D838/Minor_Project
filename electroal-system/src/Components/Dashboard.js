@@ -1,15 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Styles/Dashboard.css';
 
-function Dashboard() {
-  const stats = {
-    totalVoters: 0,
-    voted: 0,
-    notVoted: 0,
-    intruders: 0,
-  };
+const API_BASE = 'http://localhost:5000/api';
 
-  const recentVoters = [];
+function Dashboard({ intruderCount = 0 }) {
+  const [stats, setStats] = useState({
+    totalVoters: 0, voted: 0, notVoted: 0, intruders: 0
+  });
+  const [recentVoters, setRecentVoters] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    // Fetch stats
+    fetch(`${API_BASE}/stats`, { headers })
+      .then(res => res.json())
+      .then(data => setStats({
+        totalVoters: data.total_voters || 0,
+        voted: data.voted || 0,
+        notVoted: data.not_voted || 0,
+        intruders: data.intruders || intruderCount
+      }))
+      .catch(() => setStats(s => ({ ...s, intruders: intruderCount })));
+
+    // Fetch recent activity
+    fetch(`${API_BASE}/voters/recent`, { headers })
+      .then(res => res.json())
+      .then(data => setRecentVoters(data))
+      .catch(() => {});
+  }, [intruderCount]);
 
   const turnoutPercent = stats.totalVoters > 0
     ? Math.round((stats.voted / stats.totalVoters) * 100)
@@ -22,7 +42,6 @@ function Dashboard() {
         <span className="page-sub">Real-time overview</span>
       </div>
 
-      {/* 4 stat cards in one row */}
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Total Registered</span>
@@ -46,7 +65,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Turnout */}
       <div className="turnout-card">
         <div className="turnout-header">
           <h2>Voter Turnout</h2>
@@ -58,7 +76,6 @@ function Dashboard() {
         <p className="turnout-sub">{stats.voted} of {stats.totalVoters} registered voters have voted</p>
       </div>
 
-      {/* Activity Table */}
       <div className="recent-activity">
         <h2>Recent Activity</h2>
         {recentVoters.length === 0 ? (
