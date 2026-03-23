@@ -1,8 +1,3 @@
-cd "C:\Users\utsav\OneDrive\Desktop\Minor Project"
-```
-
-Create a file named `.gitignore` with this content:
-```
 # Python
 __pycache__/
 *.pyc
