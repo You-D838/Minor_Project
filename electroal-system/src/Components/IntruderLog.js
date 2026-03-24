@@ -1,30 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../Styles/IntruderLog.css';
+import { getValidToken } from '../utils/auth';
 
 const API_BASE = 'http://localhost:5000/api';
 
 function IntruderLog({ intruders: sessionIntruders = [] }) {
   const [intruders, setIntruders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [deletingId, setDeletingId] = useState(null);
 
-  // Fetch from backend on load — persistent records from DB
   useEffect(() => {
+    const token = getValidToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
     fetch(`${API_BASE}/intruders`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {
-        setIntruders(data);
+        setIntruders(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(() => {
-        // Backend not connected — fall back to session captures from props
         setIntruders(sessionIntruders);
         setLoading(false);
       });
   }, [sessionIntruders]);
 
-  // Merge any new session captures not yet in DB list
   const allIntruders = [
     ...intruders,
     ...sessionIntruders.filter(s => !intruders.find(i => i.id === s.id))
@@ -40,11 +46,9 @@ function IntruderLog({ intruders: sessionIntruders = [] }) {
   };
 
   const getImageSrc = (intruder) => {
-    // If image_path from backend — use backend static URL
     if (intruder.image_path) {
       return `http://localhost:5000/static/${intruder.image_path}`;
     }
-    // If base64 from session capture — use directly
     if (intruder.image && intruder.image.startsWith('data:')) {
       return intruder.image;
     }
@@ -63,6 +67,47 @@ function IntruderLog({ intruders: sessionIntruders = [] }) {
   const handleView = (intruder) => {
     const src = getImageSrc(intruder);
     if (src) window.open(src, '_blank');
+  };
+
+  const handleDelete = async (intruder) => {
+    const confirmed = window.confirm(`Remove intruder log #${intruder.id}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    const token = getValidToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
+    setDeletingId(intruder.id);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const response = await fetch(`${API_BASE}/intruders/${intruder.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to remove intruder log.');
+      }
+
+      setIntruders(prev => prev.filter(item => item.id !== intruder.id));
+      setMessage({ text: result.message || 'Intruder log removed successfully.', type: 'success' });
+    } catch (error) {
+      setMessage({ text: error.message || 'Failed to remove intruder log.', type: 'error' });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -87,15 +132,19 @@ function IntruderLog({ intruders: sessionIntruders = [] }) {
         </div>
       </div>
 
+      {message.text && (
+        <div className={`intruder-message ${message.type}`}>{message.text}</div>
+      )}
+
       {loading ? (
         <div className="empty-intruders">
-          <span>⏳</span>
+          <span>Loading</span>
           <h2>Loading...</h2>
           <p>Fetching intruder records from server.</p>
         </div>
       ) : allIntruders.length === 0 ? (
         <div className="empty-intruders">
-          <span>🛡️</span>
+          <span>Clear</span>
           <h2>No Intruders Detected</h2>
           <p>The system is actively monitoring. Unauthorized access attempts will appear here automatically.</p>
         </div>
@@ -107,9 +156,9 @@ function IntruderLog({ intruders: sessionIntruders = [] }) {
                 {getImageSrc(intruder) ? (
                   <img src={getImageSrc(intruder)} alt="Captured intruder" />
                 ) : (
-                  <div className="no-image">📷 No Image</div>
+                  <div className="no-image">No Image</div>
                 )}
-                <span className="alert-badge">⚠ ALERT</span>
+                <span className="alert-badge">Alert</span>
               </div>
 
               <div className="intruder-details">
@@ -143,6 +192,13 @@ function IntruderLog({ intruders: sessionIntruders = [] }) {
                 </button>
                 <button className="btn-download" onClick={() => handleDownload(intruder)}>
                   Download
+                </button>
+                <button
+                  className="btn-delete"
+                  onClick={() => handleDelete(intruder)}
+                  disabled={deletingId === intruder.id}
+                >
+                  {deletingId === intruder.id ? 'Removing...' : 'Remove'}
                 </button>
               </div>
             </div>

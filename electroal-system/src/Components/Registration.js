@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../Styles/Registration.css';
+import { getValidToken } from '../utils/auth';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -11,7 +12,6 @@ function Registration() {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [loading, setLoading] = useState(false);
 
-  // Functional update to avoid stale state
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -32,11 +32,31 @@ function Registration() {
     setFormData(prev => ({ ...prev, photo: null }));
   };
 
+  const resetForm = () => {
+    setFormData({ name: '', voterID: '', phone: '', address: '', photo: null });
+    setPreview(null);
+    setMessage({ text: '', type: '' });
+  };
+
+  const redirectToLogin = () => {
+    localStorage.removeItem('token');
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 1000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const token = getValidToken();
+      if (!token) {
+        setMessage({ text: 'Session expired. Please log in again.', type: 'error' });
+        redirectToLogin();
+        return;
+      }
+
       const data = new FormData();
       data.append('name', formData.name);
       data.append('voter_id', formData.voterID);
@@ -47,7 +67,7 @@ function Registration() {
       const response = await fetch(`${API_BASE}/voters/register`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: data
       });
@@ -56,28 +76,24 @@ function Registration() {
 
       if (response.ok) {
         setMessage({
-          text: `✅ Voter registered successfully! ID: #${result.voter_id}`,
+          text: `Registered successfully. ID: #${result.voter_id}`,
           type: 'success'
         });
-        setTimeout(() => {
-          setFormData({ name: '', voterID: '', phone: '', address: '', photo: null });
-          setPreview(null);
-          setMessage({ text: '', type: '' });
-        }, 3000);
+        setTimeout(resetForm, 3000);
+      } else if (response.status === 401) {
+        setMessage({ text: 'Session expired. Please log in again.', type: 'error' });
+        redirectToLogin();
       } else {
-        setMessage({ text: `❌ ${result.message || 'Registration failed.'}`, type: 'error' });
+        setMessage({
+          text: result.message || 'Registration failed.',
+          type: 'error'
+        });
       }
-
     } catch (err) {
       setMessage({
-        text: '✅ Voter registered successfully! ID: #' + Math.floor(Math.random() * 10000),
-        type: 'success'
+        text: 'Could not connect to server.',
+        type: 'error'
       });
-      setTimeout(() => {
-        setFormData({ name: '', voterID: '', phone: '', address: '', photo: null });
-        setPreview(null);
-        setMessage({ text: '', type: '' });
-      }, 3000);
     } finally {
       setLoading(false);
     }
@@ -162,12 +178,12 @@ function Registration() {
                       className="remove-photo"
                       onClick={(e) => { e.preventDefault(); handleRemovePhoto(); }}
                     >
-                      ✕ Remove
+                      Remove
                     </button>
                   </div>
                 ) : (
                   <div className="upload-placeholder">
-                    <span className="upload-icon">📷</span>
+                    <span className="upload-icon">Upload</span>
                     <p>Click to upload photo</p>
                     <span className="upload-hint">JPG, PNG, WEBP</span>
                   </div>

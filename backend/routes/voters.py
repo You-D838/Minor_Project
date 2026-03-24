@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify, current_app
 from database.db import get_db
-from models.recognizer import generate_voter_embedding
+from models.recognizer import generate_voter_embedding, load_embeddings, save_embeddings
 from middleware import token_required
 import os
 
@@ -84,6 +84,40 @@ def get_voters():
     } for row in rows]
 
     return jsonify(voters), 200
+
+
+@voters_bp.route('/<int:voter_db_id>', methods=['DELETE'])
+@token_required
+def delete_voter(voter_db_id):
+    db = get_db()
+    voter = db.execute(
+        'SELECT id, voter_id, photo_path FROM voters WHERE id = ?',
+        (voter_db_id,)
+    ).fetchone()
+
+    if not voter:
+        return jsonify({'message': 'Voter not found'}), 404
+
+    db.execute('DELETE FROM voters WHERE id = ?', (voter_db_id,))
+    db.commit()
+
+    if voter['photo_path']:
+        photo_path = os.path.join(
+            current_app.config['VOTER_PHOTOS_FOLDER'],
+            voter['photo_path']
+        )
+        if os.path.exists(photo_path):
+            try:
+                os.remove(photo_path)
+            except OSError:
+                pass
+
+    embeddings = load_embeddings()
+    if voter['voter_id'] in embeddings:
+        del embeddings[voter['voter_id']]
+        save_embeddings(embeddings)
+
+    return jsonify({'message': 'Voter removed successfully'}), 200
 
 
 @voters_bp.route('/recent', methods=['GET'])

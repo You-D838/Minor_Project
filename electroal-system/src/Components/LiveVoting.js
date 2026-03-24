@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import '../Styles/LiveVoting.css';
+import { getValidToken } from '../utils/auth';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -16,8 +17,14 @@ function LiveVoting({ onIntruderCaptured }) {
   // Fetch live stats
   useEffect(() => {
     const fetchStats = () => {
+      const token = getValidToken();
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
       fetch(`${API_BASE}/stats`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
         .then(data => setStats({
@@ -36,6 +43,12 @@ function LiveVoting({ onIntruderCaptured }) {
   const runScan = useCallback(async () => {
     if (isScanning || !webcamRef.current || cameraError) return;
 
+    const token = getValidToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+
     setIsScanning(true);
     setVerificationResult(null);
 
@@ -51,7 +64,7 @@ function LiveVoting({ onIntruderCaptured }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ image: screenshot })
       });
@@ -230,7 +243,6 @@ function LiveVoting({ onIntruderCaptured }) {
               <div className="threshold-marker">
                 <span>90%</span>
               </div>
-              <div className="threshold-marker::after"></div>
             </div>
             <div className="threshold-legend">
               <span className="legend-intruder">▌ Below 90% = Intruder</span>

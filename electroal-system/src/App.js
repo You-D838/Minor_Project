@@ -7,6 +7,7 @@ import IntruderLog from './Components/IntruderLog';
 import VoterLog from './Components/VoterLog';
 import Login from './Components/Login';
 import './App.css';
+import { getValidToken } from './utils/auth';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -14,7 +15,7 @@ function App() {
 
   // Persist login across refresh using localStorage token
   const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem('token')
+    !!getValidToken()
   );
 
   // Session intruder captures (for current session before backend saves)

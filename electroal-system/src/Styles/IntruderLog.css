@@ -66,6 +66,26 @@ body.dark .stat-box:hover {
   font-variant-numeric: tabular-nums;
 }
 
+.intruder-message {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.intruder-message.success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.intruder-message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
 /* ─── EMPTY STATE ────────────────────────────────── */
 .empty-intruders {
   background: var(--surface);
@@ -179,7 +199,7 @@ body.dark .intruder-card:hover {
 .intruder-actions {
   padding: 14px 18px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
   background: var(--surface2);
   border-top: 1px solid var(--border);
@@ -210,6 +230,21 @@ body.dark .intruder-card:hover {
 }
 
 .btn-download:hover { background: var(--border); }
+
+.btn-delete {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fca5a5;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: #ffe4e6;
+}
+
+.btn-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* ─── RESPONSIVE ─────────────────────────────────── */
 @media (max-width: 600px) {

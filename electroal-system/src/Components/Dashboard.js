@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/Dashboard.css';
+import { getValidToken } from '../utils/auth';
 
 const API_BASE = 'http://localhost:5000/api';
+
+function normalizeRecentVoters(data) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.recentVoters)) {
+    return data.recentVoters;
+  }
+
+  if (Array.isArray(data?.recent)) {
+    return data.recent;
+  }
+
+  return [];
+}
 
 function Dashboard({ intruderCount = 0 }) {
   const [stats, setStats] = useState({
@@ -10,12 +27,22 @@ function Dashboard({ intruderCount = 0 }) {
   const [recentVoters, setRecentVoters] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getValidToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
     const headers = { 'Authorization': `Bearer ${token}` };
 
     // Fetch stats
     fetch(`${API_BASE}/stats`, { headers })
-      .then(res => res.json())
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.message || 'Failed to load dashboard stats');
+        }
+        return data;
+      })
       .then(data => setStats({
         totalVoters: data.total_voters || 0,
         voted: data.voted || 0,
@@ -26,9 +53,15 @@ function Dashboard({ intruderCount = 0 }) {
 
     // Fetch recent activity
     fetch(`${API_BASE}/voters/recent`, { headers })
-      .then(res => res.json())
-      .then(data => setRecentVoters(data))
-      .catch(() => {});
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.message || 'Failed to load recent voters');
+        }
+        return data;
+      })
+      .then(data => setRecentVoters(normalizeRecentVoters(data)))
+      .catch(() => setRecentVoters([]));
   }, [intruderCount]);
 
   const turnoutPercent = stats.totalVoters > 0
@@ -101,8 +134,8 @@ function Dashboard({ intruderCount = 0 }) {
                     <td>{voter.name}</td>
                     <td>{voter.time}</td>
                     <td>
-                      <span className={`badge ${voter.status.toLowerCase()}`}>
-                        {voter.status}
+                      <span className={`badge ${(voter.status || 'unknown').toLowerCase()}`}>
+                        {voter.status || 'Unknown'}
                       </span>
                     </td>
                   </tr>
