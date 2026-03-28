@@ -53,6 +53,7 @@ function VoterLog() {
     const matchesSearch =
       voter.name.toLowerCase().includes(search.toLowerCase()) ||
       voter.voter_id.toLowerCase().includes(search.toLowerCase()) ||
+      (voter.citizenship_no && voter.citizenship_no.toLowerCase().includes(search.toLowerCase())) ||
       (voter.phone && voter.phone.includes(search));
     const matchesFilter = filter === 'all' || voter.status === filter;
     return matchesSearch && matchesFilter;
@@ -126,7 +127,7 @@ function VoterLog() {
           <input
             type="text"
             className="vl-search"
-            placeholder="Search by name, voter ID, or phone..."
+            placeholder="Search by name, citizenship, voter ID, or phone..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -173,6 +174,7 @@ function VoterLog() {
                   <tr>
                     <th>#</th>
                     <th>Name</th>
+                    <th>Citizenship No.</th>
                     <th>Voter ID</th>
                     <th>Phone</th>
                     <th>Address</th>
@@ -195,6 +197,7 @@ function VoterLog() {
                         </div>
                         {voter.name}
                       </td>
+                      <td className="vl-mono">{voter.citizenship_no || '-'}</td>
                       <td className="vl-mono">{voter.voter_id}</td>
                       <td>{voter.phone}</td>
                       <td>{voter.address}</td>

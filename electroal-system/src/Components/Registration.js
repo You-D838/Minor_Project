@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 import '../Styles/Registration.css';
 import { getValidToken } from '../utils/auth';
 
@@ -6,35 +7,46 @@ const API_BASE = 'http://localhost:5000/api';
 
 function Registration() {
   const [formData, setFormData] = useState({
-    name: '', voterID: '', phone: '', address: '', photo: null
+    name: '', citizenshipNo: '', phone: '', address: ''
   });
-  const [preview, setPreview] = useState(null);
+  const webcamRef = useRef(null);
+  const [captures, setCaptures] = useState([]);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [loading, setLoading] = useState(false);
+
+  const videoConstraints = useMemo(() => ({
+    width: 640,
+    height: 480,
+    facingMode: 'user'
+  }), []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, photo: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(file);
+  const captureFrame = () => {
+    const img = webcamRef.current?.getScreenshot();
+    if (!img) {
+      setMessage({ text: 'Could not capture from webcam. Please allow camera access.', type: 'error' });
+      return;
     }
+
+    setCaptures(prev => {
+      if (prev.length >= 10) {
+        return prev;
+      }
+      return [...prev, img];
+    });
   };
 
-  const handleRemovePhoto = () => {
-    setPreview(null);
-    setFormData(prev => ({ ...prev, photo: null }));
+  const clearCaptures = () => {
+    setCaptures([]);
   };
 
   const resetForm = () => {
-    setFormData({ name: '', voterID: '', phone: '', address: '', photo: null });
-    setPreview(null);
+    setFormData({ name: '', citizenshipNo: '', phone: '', address: '' });
+    setCaptures([]);
     setMessage({ text: '', type: '' });
   };
 
@@ -57,19 +69,24 @@ function Registration() {
         return;
       }
 
-      const data = new FormData();
-      data.append('name', formData.name);
-      data.append('voter_id', formData.voterID);
-      data.append('phone', formData.phone);
-      data.append('address', formData.address);
-      data.append('photo', formData.photo);
+      if (captures.length < 10) {
+        setMessage({ text: 'Please capture 10 webcam photos before registering.', type: 'error' });
+        return;
+      }
 
       const response = await fetch(`${API_BASE}/voters/register`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: data
+        body: JSON.stringify({
+          name: formData.name,
+          citizenship_no: formData.citizenshipNo,
+          phone: formData.phone,
+          address: formData.address,
+          images: captures
+        })
       });
 
       const result = await response.json();
@@ -104,7 +121,7 @@ function Registration() {
       <div className="registration-card">
         <div className="reg-header">
           <h1>Voter Registration</h1>
-          <p>Register new voters to the electoral database</p>
+          <p>Register each voter once using their citizenship number (capture 10 webcam photos)</p>
         </div>
 
         <form onSubmit={handleSubmit} className="registration-form">
@@ -121,13 +138,13 @@ function Registration() {
               />
             </div>
             <div className="form-group">
-              <label>Voter ID *</label>
+              <label>Citizenship No. *</label>
               <input
                 type="text"
-                name="voterID"
-                value={formData.voterID}
+                name="citizenshipNo"
+                value={formData.citizenshipNo}
                 onChange={handleChange}
-                placeholder="Enter voter ID number"
+                placeholder="Enter citizenship number"
                 required
               />
             </div>
@@ -158,38 +175,51 @@ function Registration() {
             </div>
           </div>
 
-          <div className="form-group photo-upload">
-            <label>Voter Photo *</label>
-            <div className="upload-area">
-              <input
-                type="file"
-                name="photo"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                required={!preview}
-                id="photo-input"
-              />
-              <label htmlFor="photo-input" className="upload-label">
-                {preview ? (
-                  <div className="preview-wrapper">
-                    <img src={preview} alt="Preview" className="preview-image" />
-                    <button
-                      type="button"
-                      className="remove-photo"
-                      onClick={(e) => { e.preventDefault(); handleRemovePhoto(); }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <div className="upload-placeholder">
-                    <span className="upload-icon">Upload</span>
-                    <p>Click to upload photo</p>
-                    <span className="upload-hint">JPG, PNG, WEBP</span>
-                  </div>
-                )}
-              </label>
+          <div className="form-group webcam-block">
+            <label>Webcam Capture (10 frames) *</label>
+            <div className="webcam-panel">
+              <div className="webcam-view">
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={videoConstraints}
+                  mirrored
+                />
+              </div>
+
+              <div className="webcam-actions">
+                <div className="webcam-progress">
+                  Captured: <strong>{captures.length}</strong> / 10
+                </div>
+                <div className="webcam-buttons">
+                  <button
+                    type="button"
+                    className="submit-btn"
+                    onClick={captureFrame}
+                    disabled={captures.length >= 10 || loading}
+                  >
+                    Capture
+                  </button>
+                  <button
+                    type="button"
+                    className="remove-photo"
+                    onClick={clearCaptures}
+                    disabled={captures.length === 0 || loading}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
             </div>
+
+            {captures.length > 0 && (
+              <div className="capture-grid">
+                {captures.map((src, idx) => (
+                  <img key={String(idx)} src={src} alt={`Capture ${idx + 1}`} className="capture-thumb" />
+                ))}
+              </div>
+            )}
           </div>
 
           <button type="submit" className="submit-btn" disabled={loading}>

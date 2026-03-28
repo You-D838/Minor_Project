@@ -1,87 +1,55 @@
-# Electoral Security System — Backend Setup Guide
+# Electoral Security System (Backend)
 
-## Folder Structure
-```
-backend/
-├── app.py
-├── middleware.py
-├── requirements.txt
-├── README.md
-├── weights/
-│   └── best.pt          ← PUT YOUR YOLO WEIGHTS HERE
-├── database/
-│   ├── __init__.py      ← empty file
-│   └── db.py
-├── routes/
-│   ├── __init__.py      ← empty file
-│   ├── auth.py
-│   ├── voters.py
-│   ├── verify.py
-│   ├── intruders.py
-│   └── stats.py
-├── models/
-│   ├── __init__.py      ← empty file
-│   ├── detector.py
-│   └── recognizer.py
-├── voter_photos/        ← auto-created
-└── static/
-    └── intruder_captures/  ← auto-created
-```
+Flask backend for voter registration + face verification.
 
-## Step 1 — Install dependencies
+## Requirements
+- Python 3.10+ recommended
+- A working webcam on the client machine (frontend captures frames)
+- Model files placed locally (not committed to git):
+  - `backend/weights/best.pt` (YOLOv5 face detector)
+  - `backend/weights/epoch_15.pth` (FaceCNN recognizer)
+
+## One-time Setup
 ```bash
 pip install -r requirements.txt
 ```
 
-## Step 2 — Create empty __init__.py files
+### YOLOv5 repo (important)
+This project loads YOLOv5 using the repo-style layout (expects `models/common.py` etc).
+
+Clone YOLOv5 into:
 ```bash
-# Windows
-type nul > database/__init__.py
-type nul > routes/__init__.py
-type nul > models/__init__.py
-
-# Mac/Linux
-touch database/__init__.py routes/__init__.py models/__init__.py
+git clone https://github.com/ultralytics/yolov5.git backend/yolov5
 ```
 
-## Step 3 — Place your YOLO weights
-Copy your best.pt file to:
-```
-backend/weights/best.pt
-```
-
-## Step 4 — Run the backend
+## Run
 ```bash
 python app.py
 ```
-Server starts at http://localhost:5000
+Backend starts at `http://127.0.0.1:5000`.
 
-## Step 5 — Run the frontend
+## Frontend
 In a separate terminal:
 ```bash
-cd electoral-system
+cd ../electroal-system
+npm install
 npm start
 ```
-Frontend starts at http://localhost:3000
+Frontend starts at `http://localhost:3000`.
 
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/login | Login with username/password |
-| POST | /api/voters/register | Register new voter with photo |
-| GET | /api/voters | Get all voters |
-| GET | /api/voters/recent | Get recent 10 activity |
-| POST | /api/verify | Verify face from webcam |
-| GET | /api/intruders | Get all intruder records |
-| GET | /api/stats | Get dashboard statistics |
+## Registration (Supervisor Update)
+- Registration is unique by `citizenship_no` (register once)
+- System generates `voter_id`
+- Frontend captures **10 webcam frames** and backend stores **multiple embeddings** per voter in SQLite
 
 ## Default Login
-Username: admin
-Password: admin123
+- Username: `admin`
+- Password: `admin123`
 
-## Notes
-- Database (electoral.db) is auto-created on first run
-- embeddings.pkl is auto-created as voters are registered
-- Each new voter registration automatically generates their face embedding
-- Intruder captures are saved to static/intruder_captures/
+## Dev Reset
+Stop the backend first (or the DB file will be locked), then:
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .\reset_dev_data.ps1
+```
+

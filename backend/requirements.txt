@@ -13,6 +13,7 @@ Pillow
 
 # Face Recognition
 facenet-pytorch
+timm
 
 # YOLOv5 dependencies
 numpy

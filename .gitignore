@@ -5,10 +5,19 @@ __pycache__/
 
 # Database
 backend/electoral.db
+backend/electoral.db-wal
+backend/electoral.db-shm
 
 # ML files (large — friend has these locally)
 backend/weights/
 backend/embeddings.pkl
+backend/embeddings.json
+backend/known_embeddings.json
+backend/*_embeddings.json
+backend/*_embeddings_meta.json
+backend/database/Rawimage/
+backend/database/preprocessed_faces/
+backend/yolov5/
 
 # Uploaded files
 backend/voter_photos/

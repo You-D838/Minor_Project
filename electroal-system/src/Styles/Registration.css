@@ -227,3 +227,71 @@ body.dark .message.error   { background: #1a0505; color: #f87171; border-color: 
   .form-row { grid-template-columns: 1fr; }
   .registration-card { padding: 24px 18px; }
 }
+
+/* Webcam Capture */
+.webcam-block { grid-column: 1 / -1; }
+
+.webcam-panel {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--surface2);
+}
+
+.webcam-view {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+  min-height: 240px;
+}
+
+.webcam-view video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.webcam-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.webcam-progress {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.webcam-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.capture-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.capture-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+@media (max-width: 720px) {
+  .webcam-panel { grid-template-columns: 1fr; }
+  .capture-grid { grid-template-columns: repeat(5, 1fr); }
+}
